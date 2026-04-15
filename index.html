@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ақиқат па, Жалған ба: Дельфин</title>
+    <style>
+        :root {
+            --primary: #006994;
+            --secondary: #87CEEB;
+            --success: #28a745;
+            --danger: #dc3545;
+            --light: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(180deg, #b3e5fc 0%, #0288d1 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+            overflow: hidden; /* Дельфин экраннан шығып кетпеуі үшін */
+        }
+
+        .game-wrapper {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            z-index: 10;
+            position: relative;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin-top: 0;
+            font-size: 28px;
+        }
+
+        .scene {
+            position: relative;
+            height: 200px;
+            margin: 20px 0;
+            border-radius: 15px;
+            background: linear-gradient(180deg, #e1f5fe 0%, #4fc3f7 100%);
+            overflow: hidden;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            border: 3px solid #81d4fa;
+        }
+
+        /* Теңіз толқыны */
+        .waves {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 40px;
+            background: #0288d1;
+            border-top-left-radius: 50% 20px;
+            border-top-right-radius: 50% 20px;
+            opacity: 0.8;
+        }
+
+        .dolphin {
+            font-size: 80px;
+            position: relative;
+            bottom: 10px;
+            transition: all 0.3s ease;
+            filter: drop-shadow(0 5px 5px rgba(0,0,0,0.3));
+            z-index: 2;
+        }
+
+        .question-box {
+            font-size: 20px;
+            font-weight: 600;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f1f8ff;
+            border-radius: 10px;
+            border-left: 5px solid var(--primary);
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            color: white;
+            flex: 1;
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        .btn-true { background-color: var(--success); }
+        .btn-true:hover { background-color: #218838; box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4); }
+        
+        .btn-false { background-color: var(--danger); }
+        .btn-false:hover { background-color: #c82333; box-shadow: 0 5px 15px rgba(220, 53, 69, 0.4); }
+
+        .btn-restart {
+            background-color: var(--primary);
+            margin-top: 20px;
+            display: none;
+        }
+        .btn-restart:hover { background-color: #0056b3; }
+
+        .progress {
+            margin-top: 20px;
+            font-size: 16px;
+            color: #666;
+            font-weight: bold;
+        }
+
+        .feedback {
+            margin-top: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            height: 25px;
+        }
+
+        /* Анимациялар */
+        @keyframes jumpAnim {
+            0% { transform: translateY(0) rotate(0deg) scale(1); }
+            40% { transform: translateY(-120px) rotate(-30deg) scale(1.2); }
+            60% { transform: translateY(-120px) rotate(10deg) scale(1.2); }
+            100% { transform: translateY(0) rotate(0deg) scale(1); }
+        }
+
+        @keyframes shakeAnim {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-15px) rotate(-10deg); }
+            40% { transform: translateX(15px) rotate(10deg); }
+            60% { transform: translateX(-15px) rotate(-10deg); }
+            80% { transform: translateX(15px) rotate(10deg); }
+        }
+
+        .jump { animation: jumpAnim 1s ease-in-out; }
+        .shake { animation: shakeAnim 0.5s ease-in-out; }
+
+        #start-screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 20px;
+            z-index: 20;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-wrapper">
+        <!-- Бастапқы экран -->
+        <div id="start-screen">
+            <h1>🐬 Дельфиннің секіруі</h1>
+            <p>Мәтін бойынша берілген сөйлемнің АҚИҚАТ немесе ЖАЛҒАН екенін тап.</p>
+            <p>Дұрыс тапсаң, дельфин биікке секіреді!</p>
+            <button class="btn-restart" style="display: block; margin-top: 20px;" onclick="startGame()">Ойынды бастау</button>
+        </div>
+
+        <!-- Ойын экраны -->
+        <h1>«Ақиқат па, Жалған ба?»</h1>
+        
+        <div class="scene">
+            <div class="dolphin" id="dolphin">🐬</div>
+            <div class="waves"></div>
+        </div>
+
+        <div class="question-box" id="question">Сұрақ жүктелуде...</div>
+        
+        <div class="buttons" id="btn-group">
+            <button class="btn-true" onclick="checkAnswer(true)">Ақиқат ✅</button>
+            <button class="btn-false" onclick="checkAnswer(false)">Жалған ❌</button>
+        </div>
+
+        <div class="feedback" id="feedback"></div>
+        <div class="progress" id="progress">Сұрақ: 1 / 8 | Ұпай: 0</div>
+        
+        <button class="btn-restart" id="btn-restart" onclick="startGame()">Қайта ойнау 🔄</button>
+    </div>
+
+    <script>
+        // Мәтіннен алынған фактілер
+        const quizData = [
+            {
+                text: "Суасты жартастарының арасындағы жолды тек кеме капитаны ғана білетін.",
+                isTrue: false,
+                explanation: "Мәтінде: жолды тек дельфин ғана білетін."
+            },
+            {
+                text: "Дельфин кеме алдында жүзіп, оған қауіпті бұғаздан өтуге жол көрсетіп отырды.",
+                isTrue: true,
+                explanation: ""
+            },
+            {
+                text: "Бұғаздан аман-есен өткен теңізшілер дельфинге тамақ лақтырып кететін.",
+                isTrue: false,
+                explanation: "Мәтінде: олар қуаныштан қолдарын бұлғап сәлемдесетін."
+            },
+            {
+                text: "Оқиға желісінде бұғазда пайда болған кеменің аты «Пингвин» еді.",
+                isTrue: true,
+                explanation: ""
+            },
+            {
+                text: "Дельфинді жаралаған адам оған винтовкадан оқ атты.",
+                isTrue: true,
+                explanation: ""
+            },
+            {
+                text: "Жараланған дельфин бірден адамдардан кек алып, кемені аударып тастады.",
+                isTrue: false,
+                explanation: "Мәтінде: ашуланған дельфин тереңге сүңгіп, жоқ болды."
+            },
+            {
+                text: "Дельфин қайта оралған соң да адамдарға жол көрсетуін жалғастырды.",
+                isTrue: true,
+                explanation: ""
+            },
+            {
+                text: "Дельфин «Пингвин» атты кемеге де апаттан аман өтуге көмектесті.",
+                isTrue: false,
+                explanation: "Мәтінде: Тек «Пингвин» атты кеме бұғазда жартасқа соғылып, апатқа ұшырады."
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let isAnimating = false;
+
+        const questionEl = document.getElementById('question');
+        const dolphinEl = document.getElementById('dolphin');
+        const feedbackEl = document.getElementById('feedback');
+        const progressEl = document.getElementById('progress');
+        const btnGroup = document.getElementById('btn-group');
+        const btnRestart = document.getElementById('btn-restart');
+        const startScreen = document.getElementById('start-screen');
+
+        // Дыбыс шығару (Web Audio API)
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new AudioContext();
+            }
+        }
+
+        function playSuccessSound() {
+            initAudio();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5
+            osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.1); // A5
+            
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+            
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.4);
+        }
+
+        function playErrorSound() {
+            initAudio();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.3);
+            
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+            
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.3);
+        }
+
+        function startGame() {
+            initAudio(); // Пайдаланушы бірінші рет басқанда аудионы қосу
+            startScreen.style.display = 'none';
+            currentQuestionIndex = 0;
+            score = 0;
+            btnGroup.style.display = 'flex';
+            btnRestart.style.display = 'none';
+            feedbackEl.innerText = '';
+            dolphinEl.innerText = '🐬';
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            isAnimating = false;
+            const currentQ = quizData[currentQuestionIndex];
+            questionEl.innerText = currentQ.text;
+            progressEl.innerText = `Сұрақ: ${currentQuestionIndex + 1} / ${quizData.length} | Ұпай: ${score}`;
+            feedbackEl.innerText = '';
+            dolphinEl.className = 'dolphin'; // анимацияларды алып тастау
+        }
+
+        function checkAnswer(userAnswer) {
+            if (isAnimating) return; // Анимация кезінде батырманы басуды тоқтату
+            isAnimating = true;
+
+            const currentQ = quizData[currentQuestionIndex];
+            const isCorrect = (userAnswer === currentQ.isTrue);
+
+            // Анимацияны тазалау
+            dolphinEl.classList.remove('jump', 'shake');
+            void dolphinEl.offsetWidth; // DOM-ды жаңарту (анимация қайта қосылуы үшін)
+
+            if (isCorrect) {
+                score++;
+                dolphinEl.classList.add('jump');
+                playSuccessSound();
+                feedbackEl.style.color = 'var(--success)';
+                feedbackEl.innerText = 'Тамаша! Дұрыс жауап! 🎉';
+            } else {
+                dolphinEl.classList.add('shake');
+                playErrorSound();
+                feedbackEl.style.color = 'var(--danger)';
+                feedbackEl.innerText = 'Қате... ' + (currentQ.explanation ? currentQ.explanation : '');
+            }
+
+            progressEl.innerText = `Сұрақ: ${currentQuestionIndex + 1} / ${quizData.length} | Ұпай: ${score}`;
+
+            setTimeout(() => {
+                currentQuestionIndex++;
+                if (currentQuestionIndex < quizData.length) {
+                    loadQuestion();
+                } else {
+                    showResults();
+                }
+            }, 2500); // 2.5 секундтан кейін келесі сұраққа өту
+        }
+
+        function showResults() {
+            btnGroup.style.display = 'none';
+            btnRestart.style.display = 'inline-block';
+            
+            let finalMessage = "";
+            if (score === quizData.length) {
+                finalMessage = "Керемет! Сен мәтінді өте жақсы түсініпсің! 🏆";
+                dolphinEl.innerText = '🐬✨';
+                dolphinEl.classList.add('jump');
+                playSuccessSound();
+            } else if (score >= quizData.length / 2) {
+                finalMessage = "Жақсы нәтиже! Бірақ мәтінді тағы бір шолып шығуға болады. 👍";
+            } else {
+                finalMessage = "Мәтінді мұқият қайта оқып шығуға кеңес беремін. 📖";
+            }
+
+            questionEl.innerText = `Ойын аяқталды!\nСенің ұпайың: ${quizData.length} сұрақтан ${score} ұпай.\n\n${finalMessage}`;
+            feedbackEl.innerText = '';
+        }
+    </script>
+</body>
+</html>
